@@ -12,4 +12,4 @@ class Controller(torch.nn.Module):
         XT = torch.relu(self.fc1(XT))
         XT = torch.relu(self.fc2(XT))
         A = self.fc3(XT)
-        return A * 10
+        return A

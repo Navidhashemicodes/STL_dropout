@@ -1,15 +1,23 @@
-# Learning dynamic of environment
-
 import torch
 
 class Dynamic(torch.nn.Module):
-    def __init__(self, d_state, d_action):
+    def __init__(self, d_state, d_action, pi_inv):
         super(Dynamic, self).__init__()
-        self.fc1 = torch.nn.Linear(d_state + d_action, 32)
-        self.fc2 = torch.nn.Linear(32, d_state)
+        self.pi_inv = pi_inv
+        self.sequential = torch.nn.Sequential(
+            torch.nn.Linear(d_state + d_action, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, 32),
+            torch.nn.ReLU(),
+            torch.nn.Linear(32, d_state)
+        )
 
-    def forward(self, X, A):
-        XA = torch.cat([X, A], dim=1)
-        XA = torch.relu(self.fc1(XA))
-        dX = self.fc2(XA)
+    def forward(self, X, A, T):
+        A_transformed = self.pi_inv(A,T)
+        XA = torch.cat([A_transformed, A], dim=1)
+        dX = self.sequential(XA)
         return dX + X
